@@ -1,4 +1,53 @@
-# nomad-terraform-cluster
+Here’s a **complete solution blueprint with Terraform, scripts, and steps** for your MLOps Engineer test task: **Nomad Cluster Deployment** 🚀
+
+---
+
+# 📌 Architecture Overview
+
+* **Cloud Provider**: AWS (Terraform IaC)
+* **Networking**:
+
+  * VPC with public/private subnets
+  * Internet Gateway + NAT Gateway
+  * Security Groups restricting inbound (SSH disabled, use SSM)
+* **Cluster**:
+
+  * 1 × Nomad Server (EC2, private subnet)
+  * 2 × Nomad Clients (EC2, private subnet, scalable via `count`)
+  * Consul agent alongside Nomad for service discovery
+* **Access**:
+
+  * Secure UI access via AWS SSM port forwarding (no public SG exposure)
+  * Optionally, reverse proxy with Nginx + BasicAuth + ACM TLS behind ALB
+* **Workload**:
+
+  * Sample Nomad Job running a containerized Nginx/Hello-World app
+  * App exposed via AWS ALB
+
+---
+
+# 📂 Repository Structure
+
+```
+nomad-cluster-terraform/
+├── README.md
+├── main.tf
+├── variables.tf
+├── outputs.tf
+├── modules/
+│   ├── vpc/
+│   │   └── vpc.tf
+│   ├── nomad-server/
+│   │   └── server.tf
+│   ├── nomad-client/
+│   │   └── client.tf
+├── scripts/
+│   ├── install_nomad.sh
+│   ├── install_consul.sh
+│   └── bootstrap.sh
+└── jobs/
+    └── hello-world.nomad
+```
 
 ---
 
@@ -190,4 +239,3 @@ job "hello-world" {
 * **CI/CD**: Add GitHub Actions workflow (`.github/workflows/terraform.yml`) to auto-deploy
 * **Monitoring**: Install Prometheus + Grafana, or enable Nomad’s telemetry to CloudWatch
 * **Secrets Management**: Integrate with HashiCorp Vault for app secrets
-
