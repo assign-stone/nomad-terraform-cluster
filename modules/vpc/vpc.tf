@@ -21,7 +21,7 @@ resource "aws_security_group" "nomad" {
     from_port   = 4646
     to_port     = 4646
     protocol    = "tcp"
-    cidr_blocks = ["YOUR_PUBLIC_IP/32"] # Replace this with your IP!
+    cidr_blocks = ["34.205.135.93/32"] # Replace this with your IP!
   }
 
   # Hello-world app
@@ -29,7 +29,7 @@ resource "aws_security_group" "nomad" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["YOUR_PUBLIC_IP/32"]
+    cidr_blocks = ["34.205.135.93/32"]
   }
 
   # SSH (optional)
@@ -37,7 +37,7 @@ resource "aws_security_group" "nomad" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["YOUR_PUBLIC_IP/32"]
+    cidr_blocks = ["34.205.135.93/32"]
   }
 
   # All outbound allowed
@@ -52,8 +52,6 @@ resource "aws_security_group" "nomad" {
 output "public_subnet_id" {
   value = aws_subnet.public.id
 }
-
-output "private_subnet_id" {
 
 output "private_subnet_id" {
   value = aws_subnet.private.id

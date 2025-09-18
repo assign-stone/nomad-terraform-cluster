@@ -1,3 +1,3 @@
-output "nomad_server_public_ip" {
+output "nomad_server_instance_public_ip" {
   value = module.nomad_server.public_ip
 }
