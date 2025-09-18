@@ -191,6 +191,3 @@ job "hello-world" {
 * **Monitoring**: Install Prometheus + Grafana, or enable Nomad’s telemetry to CloudWatch
 * **Secrets Management**: Integrate with HashiCorp Vault for app secrets
 
----
-
-👉 Atul, would you like me to package this into a **ready-to-push GitHub repo** (with README.md, Terraform modules, scripts, workflows) so you can just fork and demo?
