@@ -4,6 +4,7 @@ provider "aws" {
 
 module "vpc" {
   source = "./modules/vpc"
+  allowed_cidr = var.allowed_cidr
 }
 
 module "nomad_server" {
@@ -12,6 +13,7 @@ module "nomad_server" {
   ami_id          = var.ami_id
   instance_type   = var.server_instance_type
   security_group_ids = [module.vpc.nomad_sg_id]
+  key_name            = var.key_name
 }
 
 module "nomad_client" {
@@ -21,6 +23,7 @@ module "nomad_client" {
   instance_type   = var.client_instance_type
   client_count    = var.client_count
   security_group_ids = [module.vpc.nomad_sg_id]
+  key_name            = var.key_name
 }
 
 output "nomad_server_public_ip" {

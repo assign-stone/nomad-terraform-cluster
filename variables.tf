@@ -27,3 +27,14 @@ variable "client_count" {
   type        = number
   default     = 1
 }
+
+variable "key_name" {
+  description = "Name of the EC2 Key Pair to use for SSH access"
+  type        = string
+}
+
+variable "allowed_cidr" {
+  description = "CIDR block allowed to access Nomad UI, app, and SSH"
+  type        = string
+  default     = "103.133.67.108/32"
+}

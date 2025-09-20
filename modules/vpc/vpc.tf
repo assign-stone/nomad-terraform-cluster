@@ -1,3 +1,8 @@
+variable "allowed_cidr" {
+  description = "CIDR block allowed to access Nomad UI, app, and SSH"
+  type        = string
+}
+
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
 }
@@ -21,7 +26,7 @@ resource "aws_security_group" "nomad" {
     from_port   = 4646
     to_port     = 4646
     protocol    = "tcp"
-    cidr_blocks = ["34.205.135.93/32"] # Replace this with your IP!
+    cidr_blocks = [var.allowed_cidr]
   }
 
   # Hello-world app
@@ -29,7 +34,7 @@ resource "aws_security_group" "nomad" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["34.205.135.93/32"]
+    cidr_blocks = [var.allowed_cidr]
   }
 
   # SSH (optional)
@@ -37,7 +42,7 @@ resource "aws_security_group" "nomad" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["34.205.135.93/32"]
+    cidr_blocks = [var.allowed_cidr]
   }
 
   # All outbound allowed
