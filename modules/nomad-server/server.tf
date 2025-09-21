@@ -11,7 +11,7 @@ resource "aws_instance" "server" {
   vpc_security_group_ids = var.security_group_ids
   key_name               = var.key_name
 
-  user_data = file("${path.module}/../../scripts/bootstrap.sh")
+  user_data = templatefile("${path.module}/../../scripts/bootstrap.sh", { role = "server" })
 
   tags = {
     Name = "nomad-server"

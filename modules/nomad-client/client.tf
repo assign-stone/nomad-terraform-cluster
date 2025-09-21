@@ -13,7 +13,7 @@ resource "aws_instance" "clients" {
   vpc_security_group_ids = var.security_group_ids
   key_name      = var.key_name
 
-  user_data = file("${path.module}/../../scripts/bootstrap.sh")
+  user_data = templatefile("${path.module}/../../scripts/bootstrap.sh", { role = "client" })
 
   tags = {
     Name = "nomad-client-${count.index}"
