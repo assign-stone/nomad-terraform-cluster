@@ -36,5 +36,5 @@ variable "key_name" {
 variable "allowed_cidr" {
   description = "CIDR block allowed to access Nomad UI, app, and SSH"
   type        = string
-  default     = "103.133.67.108/32"
+  default     = "	2409:40c2:103f:bc88:d48e:b2e:f148:3456/32"
 }
