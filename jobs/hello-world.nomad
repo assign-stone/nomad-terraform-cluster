@@ -4,6 +4,13 @@ job "hello-world" {
   group "web" {
     count = 1
 
+    network {
+      port "http" {
+        to     = 80      # map container port 80
+        static = 8080    # expose on host port 8080
+      }
+    }
+
     task "nginx" {
       driver = "docker"
 
@@ -17,11 +24,6 @@ job "hello-world" {
         memory = 128
       }
     }
-
-    network {
-      port "http" {
-        static = 8080
-      }
-    }
   }
 }
+avh-ddzp-qao
