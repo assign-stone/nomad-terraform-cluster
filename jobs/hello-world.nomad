@@ -7,7 +7,7 @@ job "hello-world" {
     network {
       port "http" {
         to     = 80      # map container port 80
-        static = 8080    # expose on host port 8080
+        static = 80    # expose on host port 8080
       }
     }
 
