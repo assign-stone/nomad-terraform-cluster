@@ -1,241 +1,192 @@
-Here’s a **complete solution blueprint with Terraform, scripts, and steps** for your MLOps Engineer test task: **Nomad Cluster Deployment** 🚀
+# Nomad Terraform Cluster
 
----
+## Overview
 
-# 📌 Architecture Overview
+This repository provisions a secure, scalable, and resilient HashiCorp Nomad cluster on AWS using Terraform. It includes:
+- Infrastructure as Code (IaC) using Terraform.
+- AWS IAM integration for secure access and automation.
+- GitHub Actions for CI/CD.
+- Logging and metrics setup for observability.
 
-* **Cloud Provider**: AWS (Terraform IaC)
-* **Networking**:
+## Architecture
 
-  * VPC with public/private subnets
-  * Internet Gateway + NAT Gateway
-  * Security Groups restricting inbound (SSH disabled, use SSM)
-* **Cluster**:
+- **VPC:** Custom VPC with public and private subnets.
+- **Nomad Server:** Runs in the public subnet.
+- **Nomad Clients:** Run in the private subnet; easily scalable.
+- **Security Groups:** Restrict access to Nomad UI, application, and SSH by CIDR.
+- **IAM:** Used for authenticated AWS CLI and automation.
+- **GitHub Actions:** Automates Terraform deployment.
+- **Observability:** Logging via Nomad and Docker; Metrics exposed for monitoring.
 
-  * 1 × Nomad Server (EC2, private subnet)
-  * 2 × Nomad Clients (EC2, private subnet, scalable via `count`)
-  * Consul agent alongside Nomad for service discovery
-* **Access**:
+**Nomad Cluster Architecture:**
 
-  * Secure UI access via AWS SSM port forwarding (no public SG exposure)
-  * Optionally, reverse proxy with Nginx + BasicAuth + ACM TLS behind ALB
-* **Workload**:
+![Nomad Cluster Architecture](images/nomad-cluster.png)
 
-  * Sample Nomad Job running a containerized Nginx/Hello-World app
-  * App exposed via AWS ALB
-
----
-
-# 📂 Repository Structure
+## Directory Structure
 
 ```
-nomad-cluster-terraform/
-├── README.md
-├── main.tf
-├── variables.tf
-├── outputs.tf
-├── modules/
-│   ├── vpc/
-│   │   └── vpc.tf
-│   ├── nomad-server/
-│   │   └── server.tf
-│   ├── nomad-client/
-│   │   └── client.tf
-├── scripts/
-│   ├── install_nomad.sh
-│   ├── install_consul.sh
-│   └── bootstrap.sh
-└── jobs/
-    └── hello-world.nomad
+.
+├── jobs/hello-world.nomad         # Sample Nomad job (nginx container)
+├── main.tf                        # Main Terraform config
+├── modules/                       # Terraform modules (vpc, nomad-server, nomad-client)
+├── outputs.tf                     # Terraform outputs
+├── scripts/                       # Bootstrap and install scripts
+├── variables.tf                   # Terraform variables
+├── .github/workflows/terraform.yml# GitHub Actions workflow (CI/CD)
+├── images/                        # Screenshots and diagrams
 ```
 
----
+## Prerequisites
 
-# 🛠 Terraform Code Snippets
+- AWS account & access keys (IAM user recommended)
+- EC2 Key Pair (for SSH)
+- Terraform >= 1.3.0
+- AWS CLI (configured with IAM user)
+- GitHub repository secrets set for CI/CD
 
-### **VPC Module (modules/vpc/vpc.tf)**
+## Getting Started
 
+### 1. Clone the Repository
+
+```sh
+git clone https://github.com/assign-stone/nomad-terraform-cluster.git
+cd nomad-terraform-cluster
+```
+
+### 2. Configure AWS CLI (IAM User)
+
+```sh
+aws configure
+```
+Enter your IAM user's access key and secret key. This is required for both local Terraform and GitHub Actions automation.
+
+### 3. Set Required Variables
+
+Edit `variables.tf` as needed:
+- `key_name` – Your EC2 Key Pair name
+- `allowed_cidr` – Your IP/CIDR for UI/SSH access
+
+### 4. Initialize & Apply Terraform
+
+```sh
+terraform init
+terraform plan
+terraform apply
+```
+
+### 5. Access Nomad UI
+
+- Get the public IP:
+  ```sh
+  terraform output nomad_server_public_ip
+  ```
+- Open in browser:
+  ```
+  http://<public-ip>:4646/ui/
+  ```
+  (Accessible only from your allowed CIDR.)
+
+**Nomad UI Example:**
+
+![Nomad UI Example](images/nomad-ui/nomad-ui.png)
+
+### 6. Deploy Hello-World Job
+
+SSH to the Nomad server:
+
+```sh
+ssh -i <your-key.pem> ec2-user@<public-ip>
+nomad job run jobs/hello-world.nomad
+```
+
+When the job is running, visit:
+```
+http://<public-ip>:8080/
+```
+
+**Nginx Page Screenshot:**
+
+![Nginx Welcome Page](images/nginx_page.png)
+
+## CI/CD with GitHub Actions
+
+This repo includes a workflow for CI/CD:
+
+- `.github/workflows/terraform.yml` automates Terraform actions on push/PR.
+- **Setup:**  
+  Add your AWS credentials (IAM user) as GitHub secrets:
+  - `AWS_ACCESS_KEY_ID`
+  - `AWS_SECRET_ACCESS_KEY`
+
+## Logging & Metrics
+
+### Nomad & Docker Logs
+
+- View Nomad logs:
+  ```sh
+  sudo journalctl -u nomad -f
+  ```
+- View allocation logs (job logs):
+  ```sh
+  nomad alloc logs <allocation-id>
+  ```
+  Find allocation ID with:
+  ```sh
+  nomad job status hello-world
+  ```
+
+### Metrics
+
+Nomad exposes Prometheus metrics when enabled in the config:
 ```hcl
-resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-}
-
-resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
-  map_public_ip_on_launch = true
-}
-
-resource "aws_subnet" "private" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.2.0/24"
+telemetry {
+  collection_interval = "1m"
+  prometheus_metrics  = true
 }
 ```
-
----
-
-### **Nomad Server EC2 (modules/nomad-server/server.tf)**
-
-```hcl
-resource "aws_instance" "server" {
-  ami           = "ami-xxxxxxxx" # Ubuntu 22.04 LTS
-  instance_type = "t3.medium"
-  subnet_id     = var.subnet_id
-  user_data     = file("${path.module}/../../scripts/bootstrap.sh")
-
-  tags = {
-    Name = "nomad-server"
-  }
-}
+Check metrics endpoint:
+```
+http://<public-ip>:4646/v1/metrics
 ```
 
----
+## IAM Usage
 
-### **Nomad Client EC2 (modules/nomad-client/client.tf)**
+- Used to authenticate AWS CLI and Terraform actions.
+- Secures automation via GitHub Actions (no hardcoded credentials).
+- Sample command to verify IAM identity:
+  ```sh
+  aws sts get-caller-identity
+  ```
 
-```hcl
-resource "aws_instance" "clients" {
-  count         = var.client_count
-  ami           = "ami-xxxxxxxx"
-  instance_type = "t3.small"
-  subnet_id     = var.subnet_id
-  user_data     = file("${path.module}/../../scripts/bootstrap.sh")
+## Security Best Practices
 
-  tags = {
-    Name = "nomad-client-${count.index}"
-  }
-}
-```
+- Use IAM users with limited permissions for automation.
+- Restrict Nomad UI and SSH access via Security Groups (`allowed_cidr`).
+- Rotate IAM credentials regularly.
+- For extra protection, use SSH tunneling for UI, avoid public exposure.
 
----
+## Troubleshooting
 
-# 📜 Scripts
+- **Job fails to start:** Check job logs (`nomad alloc logs ...`) and Docker status (`sudo systemctl status docker`).
+- **Port conflicts:** Make sure exposed ports (e.g., 8080) are not in use.
+- **No logs in UI:** Use CLI to fetch logs.
+- **Metrics not visible:** Ensure telemetry block is in Nomad config and Nomad is restarted.
 
-### **scripts/install\_nomad.sh**
+## Useful Commands
 
-```bash
-#!/bin/bash
-set -e
+- **Initialize Terraform:** `terraform init`
+- **Plan Terraform:** `terraform plan`
+- **Apply Terraform:** `terraform apply`
+- **Nomad job status:** `nomad job status hello-world`
+- **Nomad job logs:** `nomad alloc logs <allocation-id>`
+- **Nomad server logs:** `sudo journalctl -u nomad -f`
+- **Docker status:** `sudo systemctl status docker`
+- **AWS IAM identity:** `aws sts get-caller-identity`
 
-NOMAD_VERSION=1.8.0
-curl -sSL https://releases.hashicorp.com/nomad/${NOMAD_VERSION}/nomad_${NOMAD_VERSION}_linux_amd64.zip -o /tmp/nomad.zip
-unzip /tmp/nomad.zip -d /usr/local/bin/
-useradd --system --home /etc/nomad.d --shell /bin/false nomad
-mkdir -p /etc/nomad.d
-chmod 700 /etc/nomad.d
-```
+## License
 
-### **scripts/bootstrap.sh**
+MIT
 
-```bash
-#!/bin/bash
-set -e
-apt-get update -y
-apt-get install -y unzip curl jq
+## Author
 
-# Install Consul & Nomad
-bash /tmp/install_consul.sh
-bash /tmp/install_nomad.sh
-
-# Systemd service for Nomad
-cat <<EOF >/etc/systemd/system/nomad.service
-[Unit]
-Description=Nomad
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-ExecStart=/usr/local/bin/nomad agent -config=/etc/nomad.d
-Restart=on-failure
-LimitNOFILE=65536
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-systemctl enable nomad
-systemctl start nomad
-```
-
----
-
-# 🚀 Nomad Job (jobs/hello-world.nomad)
-
-```hcl
-job "hello-world" {
-  datacenters = ["dc1"]
-
-  group "web" {
-    count = 1
-
-    task "nginx" {
-      driver = "docker"
-
-      config {
-        image = "nginx:alpine"
-        ports = ["http"]
-      }
-
-      resources {
-        cpu    = 100
-        memory = 128
-      }
-    }
-
-    network {
-      port "http" {
-        static = 8080
-      }
-    }
-  }
-}
-```
-
----
-
-# 📖 Deployment Steps
-
-1. **Clone repo & init Terraform**
-
-   ```bash
-   git clone https://github.com/YOURUSER/nomad-cluster-terraform.git
-   cd nomad-cluster-terraform
-   terraform init
-   terraform apply -auto-approve
-   ```
-
-2. **Access Nomad UI (securely)**
-
-   ```bash
-   aws ssm start-session --target <server-instance-id> --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["4646"], "localPortNumber":["4646"]}'
-   ```
-
-   👉 Then open [http://localhost:4646](http://localhost:4646)
-
-3. **Deploy hello-world job**
-
-   ```bash
-   nomad job run jobs/hello-world.nomad
-   ```
-
-4. **Verify app**
-
-   * If using ALB: Visit `http://<alb-dns-name>:8080`
-   * If using port forwarding: `curl http://localhost:8080`
-
----
-
-# 🔒 Security Best Practices
-
-* No SSH exposed; all access via **AWS SSM Session Manager**
-* Private subnets for all Nomad nodes
-* TLS can be enabled using `nomad auto-encrypt` or `vault` integration
-* IAM roles assigned to instances (no hardcoded creds)
-
----
-
-# 🎁 Bonus Add-ons
-
-* **CI/CD**: Add GitHub Actions workflow (`.github/workflows/terraform.yml`) to auto-deploy
-* **Monitoring**: Install Prometheus + Grafana, or enable Nomad’s telemetry to CloudWatch
-* **Secrets Management**: Integrate with HashiCorp Vault for app secrets
+assign-stone
