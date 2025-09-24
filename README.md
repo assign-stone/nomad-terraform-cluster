@@ -239,6 +239,18 @@ http://<public-ip>:4646/v1/metrics
 - **Docker status:** `sudo systemctl status docker`
 - **AWS IAM identity:** `aws sts get-caller-identity`
 
+## Future Improvements / Bonus Task Considered
+
+As part of this project, I explored additional enhancements to further improve the infrastructure and deployment process. While these features are not currently implemented, they represent possible next steps for future development:
+
+- **Automated Monitoring Stack (Prometheus & Grafana):**  
+  I attempted to set up automated monitoring for the Nomad cluster. Although the metrics endpoint is exposed and ready for scraping, the full integration with Prometheus and Grafana was not completed in this version. This is a recommended next step for production observability.
+
+- **Automated Secrets Management:**  
+  The AWS credentials required for CI/CD were securely configured using GitHub Secrets in the repository settings. For further enhancement, integration with AWS Secrets Manager or HashiCorp Vault could be considered.
+
+These enhancements are not included in the current submission but were considered to demonstrate my awareness of best practices and my commitment to continuous improvement.
+
 ## License
 
 MIT
