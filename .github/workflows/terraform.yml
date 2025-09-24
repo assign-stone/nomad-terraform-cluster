@@ -1,11 +1,3 @@
-
----
-
-## 3) GitHub Actions: example workflow (copy to `.github/workflows/terraform.yml`)
-
-Create the folder and file and paste this:
-
-```yaml
 name: Terraform CI
 
 on:
