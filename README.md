@@ -65,6 +65,7 @@ Enter your IAM user's access key and secret key. This is required for both local
 Edit `variables.tf` as needed:
 - `key_name` – Your EC2 Key Pair name
 - `allowed_cidr` – Your IP/CIDR for UI/SSH access
+- `region` – AWS region to deploy; default is `us-east-1`
 
 ### 4. Initialize & Apply Terraform
 
@@ -119,6 +120,59 @@ This repo includes a workflow for CI/CD:
   Add your AWS credentials (IAM user) as GitHub secrets:
   - `AWS_ACCESS_KEY_ID`
   - `AWS_SECRET_ACCESS_KEY`
+
+## Credentials Required for Testing
+
+To deploy and access the infrastructure, you will need:
+
+- **AWS Credentials:**  
+  An IAM user’s Access Key ID and Secret Access Key with permissions for EC2, VPC, IAM, and related services.  
+  *How to get:* Create an IAM user in AWS, attach the necessary policies (e.g., AdministratorAccess for demo/testing), and generate/access keys.
+
+- **EC2 Key Pair:**  
+  Required to SSH into the Nomad server.  
+  *How to get:*  
+    - Go to AWS Console > EC2 > Key Pairs > Create Key Pair.  
+    - Download the `.pem` file and specify its name in `variables.tf` (`key_name`).
+
+- **AWS Region:**  
+  This infrastructure is deployed in `us-east-1`.  
+  *Make sure your AWS CLI and Terraform are configured to use `us-east-1`, or update the region in your Terraform files if needed.*
+
+- **CIDR for Allowed Access:**  
+  The `allowed_cidr` variable in `variables.tf` controls which IP addresses can access Nomad UI and SSH.  
+  *Set this to your own public IP address for security, or use `0.0.0.0/0` to allow access from anywhere for testing (not recommended for production).*  
+  *How to set:*  
+    - Find your public IP using a service like [https://ifconfig.me](https://ifconfig.me)  
+    - Set `allowed_cidr = "YOUR.IP.ADDRESS/32"` (e.g., `"203.0.113.5/32"`)  
+    - Or, for open access (testing only): `allowed_cidr = "0.0.0.0/0"`
+
+- **GitHub Secrets for CI/CD:**  
+  - `AWS_ACCESS_KEY_ID`
+  - `AWS_SECRET_ACCESS_KEY`  
+  *How to set:* Add these secrets in your GitHub repository settings under "Secrets and variables".
+
+- **GitHub Actions Environment Permissions:**  
+  In your GitHub repository settings, you can configure environments (such as "production") and set specific permissions for who can approve or trigger deployments.  
+  For this project, a "production" environment was created and permissions were set so that only your account can approve and apply Terraform changes via GitHub Actions.  
+  *How to check:*  
+    - Go to your repository > Settings > Environments > production  
+    - Review environment protection rules and required reviewers.
+
+> **Note:** For security, do not commit credentials to the repository. Always use environment variables, secret managers, GitHub secrets, and repository environment protection.
+
+**Example of `variables.tf` configuration:**
+```hcl
+variable "region" {
+  default = "us-east-1"
+}
+variable "key_name" {
+  default = "your-keypair-name"
+}
+variable "allowed_cidr" {
+  default = "203.0.113.5/32" # replace with your IP, or use "0.0.0.0/0" for open testing
+}
+```
 
 ## Logging & Metrics
 
