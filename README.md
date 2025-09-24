@@ -249,7 +249,7 @@ As part of this project, I explored additional enhancements to further improve t
 - **Automated Secrets Management:**  
   The AWS credentials required for CI/CD were securely configured using GitHub Secrets in the repository settings. For further enhancement, integration with AWS Secrets Manager or HashiCorp Vault could be considered.
 
-These enhancements are not included in the current submission but were considered to demonstrate my awareness of best practices and my commitment to continuous improvement.
+These enhancements are planned for future iterations but have been considered with best practices and future improvements in mind.
 
 ## License
 
