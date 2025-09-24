@@ -88,7 +88,9 @@ terraform apply
 
 **Nomad UI Example:**
 
-![Nomad UI Example](images/nomad-ui/nomad-ui.png)
+![Nomad UI Job](images/nomad-ui/nomad-job.png)
+![Nomad UI Server](images/nomad-ui/nomad-server.png)
+![Nomad UI Client](images/nomad-ui/nomad-client.png)
 
 ### 6. Deploy Hello-World Job
 
@@ -169,7 +171,7 @@ http://<public-ip>:4646/v1/metrics
 
 - **Job fails to start:** Check job logs (`nomad alloc logs ...`) and Docker status (`sudo systemctl status docker`).
 - **Port conflicts:** Make sure exposed ports (e.g., 8080) are not in use.
-- **No logs in UI:** Use CLI to fetch logs.
+- **Logs in UI:** Use CLI to fetch logs.
 - **Metrics not visible:** Ensure telemetry block is in Nomad config and Nomad is restarted.
 
 ## Useful Commands
