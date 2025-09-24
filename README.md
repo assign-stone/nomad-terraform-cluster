@@ -233,6 +233,7 @@ http://<public-ip>:4646/v1/metrics
 - **Initialize Terraform:** `terraform init`
 - **Plan Terraform:** `terraform plan`
 - **Apply Terraform:** `terraform apply`
+- **Destroy Terraform Infra:** `terraform destroy`
 - **Nomad job status:** `nomad job status hello-world`
 - **Nomad job logs:** `nomad alloc logs <allocation-id>`
 - **Nomad server logs:** `sudo journalctl -u nomad -f`
