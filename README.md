@@ -1,4 +1,4 @@
-# Nomad Terraform Cluster
+# HashiCorp Nomad Cluster on AWS: Automated IaC with Terraform and GitHub Actions
 
 ## Overview
 
